@@ -232,6 +232,8 @@
                                messageAsDictionary: resultDict
                                ];
     [self.commandDelegate sendPluginResult:result callbackId:callback];
+    
+    NSLog(@"-------------------------------%@", scannedText);
 }
 
 //--------------------------------------------------------------------------
@@ -329,17 +331,28 @@ parentViewController:(UIViewController*)parentViewController
 
 //--------------------------------------------------------------------------
 - (void)openDialog {
-    [self.parentViewController
-     presentViewController:self.viewController
-     animated:YES completion:nil
-     ];
+    [self.parentViewController addChildViewController:self.viewController];                 // 1
+    self.viewController.view.frame = CGRectMake(0, 120, self.viewController.view.bounds.size.width, self.viewController.view.bounds.size.height - 120); // 2
+    [self.parentViewController.view addSubview:self.viewController.view];
+    [self.viewController didMoveToParentViewController:self.parentViewController];
+    
+//    [self.parentViewController
+//     presentViewController:self.viewController
+//     animated:NO completion:nil
+//     ];
 }
 
 //--------------------------------------------------------------------------
 - (void)barcodeScanDone:(void (^)(void))callbackBlock {
     self.capturing = NO;
     [self.captureSession stopRunning];
-    [self.parentViewController dismissViewControllerAnimated:YES completion:callbackBlock];
+//    [self.parentViewController dismissViewControllerAnimated:YES completion:callbackBlock];
+    
+    callbackBlock();
+    
+    [self.viewController willMoveToParentViewController:nil];  // 1
+    [self.viewController.view removeFromSuperview];            // 2
+    [self.viewController removeFromParentViewController];
     
     // viewcontroller holding onto a reference to us, release them so they
     // will release us
@@ -381,6 +394,7 @@ parentViewController:(UIViewController*)parentViewController
 - (void)barcodeScanSucceeded:(NSString*)text format:(NSString*)format {
     dispatch_sync(dispatch_get_main_queue(), ^{
         [self barcodeScanDone:^{
+            NSLog(@"barcodeScanSucceeded - %@", text);
             [self.plugin returnSuccess:text format:format cancelled:FALSE flipped:FALSE callback:self.callback];
         }];
         AudioServicesPlaySystemSound(_soundFileObject);
@@ -893,6 +907,7 @@ parentViewController:(UIViewController*)parentViewController
 - (void)viewDidAppear:(BOOL)animated {
     [self startCapturing];
 
+    NSLog(@"*******************************************************");
     [super viewDidAppear:animated];
 }
 
@@ -908,7 +923,7 @@ parentViewController:(UIViewController*)parentViewController
 
 //--------------------------------------------------------------------------
 - (IBAction)cancelButtonPressed:(id)sender {
-    [self.processor performSelector:@selector(barcodeScanCancelled) withObject:nil afterDelay:0];
+//    [self.processor performSelector:@selector(barcodeScanCancelled) withObject:nil afterDelay:0];
 }
 
 - (void)flipCameraButtonPressed:(id)sender
@@ -995,7 +1010,7 @@ parentViewController:(UIViewController*)parentViewController
     CGRect  rectArea       = CGRectMake(0, rootViewHeight - toolbarHeight, rootViewWidth, toolbarHeight);
     [toolbar setFrame:rectArea];
 
-    [overlayView addSubview: toolbar];
+    //[overlayView addSubview: toolbar];
 
     UIImage* reticleImage = [self buildReticleImage];
     UIView* reticleView = [[UIImageView alloc] initWithImage: reticleImage];
