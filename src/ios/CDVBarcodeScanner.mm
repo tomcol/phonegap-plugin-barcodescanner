@@ -232,8 +232,6 @@
                                messageAsDictionary: resultDict
                                ];
     [self.commandDelegate sendPluginResult:result callbackId:callback];
-    
-    NSLog(@"-------------------------------%@", scannedText);
 }
 
 //--------------------------------------------------------------------------
@@ -332,7 +330,7 @@ parentViewController:(UIViewController*)parentViewController
 //--------------------------------------------------------------------------
 - (void)openDialog {
     [self.parentViewController addChildViewController:self.viewController];                 // 1
-    self.viewController.view.frame = CGRectMake(0, 120, self.viewController.view.bounds.size.width, self.viewController.view.bounds.size.height - 120); // 2
+    self.viewController.view.frame = CGRectMake(0, 64, self.viewController.view.bounds.size.width, self.viewController.view.bounds.size.height - 120); // 2
     [self.parentViewController.view addSubview:self.viewController.view];
     [self.viewController didMoveToParentViewController:self.parentViewController];
     
@@ -394,7 +392,6 @@ parentViewController:(UIViewController*)parentViewController
 - (void)barcodeScanSucceeded:(NSString*)text format:(NSString*)format {
     dispatch_sync(dispatch_get_main_queue(), ^{
         [self barcodeScanDone:^{
-            NSLog(@"barcodeScanSucceeded - %@", text);
             [self.plugin returnSuccess:text format:format cancelled:FALSE flipped:FALSE callback:self.callback];
         }];
         AudioServicesPlaySystemSound(_soundFileObject);
@@ -907,7 +904,6 @@ parentViewController:(UIViewController*)parentViewController
 - (void)viewDidAppear:(BOOL)animated {
     [self startCapturing];
 
-    NSLog(@"*******************************************************");
     [super viewDidAppear:animated];
 }
 
